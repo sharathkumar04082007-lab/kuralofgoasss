@@ -1,0 +1,42 @@
+[
+  {
+    "strategy": "fixed",
+    "total_queries": 50,
+    "total_chunks": 1006,
+    "recall@1": 1.0,
+    "recall@3": 1.0,
+    "recall@5": 1.0,
+    "recall@10": 1.0,
+    "mrr": 1.0
+  },
+  {
+    "strategy": "sentence",
+    "total_queries": 50,
+    "total_chunks": 1000,
+    "recall@1": 1.0,
+    "recall@3": 1.0,
+    "recall@5": 1.0,
+    "recall@10": 1.0,
+    "mrr": 1.0
+  },
+  {
+    "strategy": "semantic",
+    "total_queries": 50,
+    "total_chunks": 1184,
+    "recall@1": 1.0,
+    "recall@3": 1.0,
+    "recall@5": 1.0,
+    "recall@10": 1.0,
+    "mrr": 1.0
+  },
+  {
+    "strategy": "metadata",
+    "total_queries": 50,
+    "total_chunks": 1006,
+    "recall@1": 1.0,
+    "recall@3": 1.0,
+    "recall@5": 1.0,
+    "recall@10": 1.0,
+    "mrr": 1.0
+  }
+]
