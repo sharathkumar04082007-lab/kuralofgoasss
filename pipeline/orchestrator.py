@@ -232,16 +232,16 @@ class RAGOrchestrator:
         else:
             final_sources = retrieved_sources[:k]
 
-        # Check retrieval sufficiency & semantic query relevance
-        q_tokens = [w.lower() for w in re.findall(r'\w+', query, re.UNICODE) if w.lower() not in STOP_WORDS]
+        # Check retrieval sufficiency & substantive keyword overlap
+        q_tokens = [w.lower() for w in re.findall(r'\w+', query, re.UNICODE) if len(w) > 2 and w.lower() not in STOP_WORDS]
         context_text = " ".join([s.text_excerpt for s in final_sources]).lower()
         context_tokens = set(re.findall(r'\w+', context_text, re.UNICODE))
         
-        has_overlap = len(set(q_tokens).intersection(context_tokens)) > 0 if q_tokens else True
-        top_score = max([s.relevance_score for s in final_sources]) if final_sources else 0.0
+        matched_tokens = set(q_tokens).intersection(context_tokens) if q_tokens else set()
+        overlap_ratio = len(matched_tokens) / max(1, len(q_tokens)) if q_tokens else 1.0
 
-        if not final_sources or len(final_sources) == 0 or (not has_overlap and top_score < 0.85):
-            logger.info(f"No sufficiently relevant context found for query: '{query}' (overlap={has_overlap}, score={top_score})")
+        if not final_sources or len(final_sources) == 0 or (len(q_tokens) > 0 and overlap_ratio < 0.20):
+            logger.info(f"Insufficient retrieval relevance (overlap={round(overlap_ratio, 2)}) for query: '{query}'")
             resp = QueryResponse(
                 transcript=query,
                 answer=self.REFUSAL_MESSAGE,
