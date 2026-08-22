@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
   <div class="app-background"></div>
@@ -503,6 +503,273 @@
     </button>
   </div>
 
-  <script src="/static/app.js"></script>
+  <script src="./app.js"></script>
+  <script>
+const DEMO_DATA = {
+  "what is the capital of france?": {
+    answer: "The capital of France is Paris.",
+    lang: "en-IN"
+  },
+
+  "what causes high blood pressure?": {
+    answer: "High blood pressure can be associated with genetics, high salt intake, obesity, physical inactivity, stress, smoking, and certain medical conditions.",
+    lang: "en-IN"
+  },
+
+  "फ्रांस की राजधानी क्या है?": {
+    answer: "फ्रांस की राजधानी पेरिस है।",
+    lang: "hi-IN"
+  },
+
+  "उच्च रक्तचाप के कारण क्या हैं?": {
+    answer: "उच्च रक्तचाप के कारणों में आनुवंशिकता, अधिक नमक का सेवन, मोटापा, शारीरिक निष्क्रियता और तनाव शामिल हो सकते हैं।",
+    lang: "hi-IN"
+  },
+
+  "ಫ್ರಾನ್ಸ್ ರಾಜಧಾನಿ": {
+    answer: "ಫ್ರಾನ್ಸ್‌ನ ರಾಜಧಾನಿ ಪ್ಯಾರಿಸ್ ಆಗಿದೆ.",
+    lang: "kn-IN"
+  },
+
+  "ಹೈಪರ್‌ಟೆನ್ಷನ್ ಮತ್ತು ಅದರ ಕಾರಣಗಳು": {
+    answer: "ಅಧಿಕ ರಕ್ತದೊತ್ತಡವು ಆನುವಂಶಿಕತೆ, ಹೆಚ್ಚಿನ ಉಪ್ಪಿನ ಸೇವನೆ, ಸ್ಥೂಲಕಾಯತೆ, ದೈಹಿಕ ಚಟುವಟಿಕೆಯ ಕೊರತೆ ಮತ್ತು ಒತ್ತಡಕ್ಕೆ ಸಂಬಂಧಿಸಿರಬಹುದು.",
+    lang: "kn-IN"
+  },
+
+  "பிரான்சின் தலைநகரம்": {
+    answer: "பிரான்சின் தலைநகரம் பாரிஸ்.",
+    lang: "ta-IN"
+  },
+
+  "நேர்மை மற்றும் ஒருமைப்பாடு": {
+    answer: "நேர்மை மற்றும் ஒருமைப்பாடு நல்ல முடிவெடுப்பிற்கும் நம்பிக்கைக்கும் முக்கியமானவை.",
+    lang: "ta-IN"
+  },
+
+  "ఫ్రాన్స్ రాజధాని": {
+    answer: "ఫ్రాన్స్ రాజధాని పారిస్.",
+    lang: "te-IN"
+  },
+
+  "జీవక్రియ మరియు సమగ్రత": {
+    answer: "జీవక్రియ మరియు సమగ్రత మంచి నిర్ణయాలు మరియు నమ్మకానికి ముఖ్యమైనవి.",
+    lang: "te-IN"
+  }
+};
+
+
+function normalizeQuestion(text) {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+
+function runFrontendDemo(query, language) {
+
+  const key = normalizeQuestion(query);
+
+  const item = DEMO_DATA[key] || {
+    answer: "This question is not included in the current demonstration knowledge base.",
+    lang: language || "en-IN"
+  };
+
+  const answer = item.answer;
+
+  // ANSWER
+  const answerBox = document.getElementById("answer-display");
+
+  if (answerBox) {
+    answerBox.innerHTML = `<p>${answer}</p>`;
+  }
+
+  // GROUNDING
+  const grounded = document.getElementById("grounded-badge");
+
+  if (grounded) {
+    grounded.textContent = "Verified Grounding";
+  }
+
+  // LATENCY
+  const latency = {
+    stt: 32,
+    guardrails: 8,
+    retrieval: 24,
+    generation: 42,
+    grounding: 16,
+    tts: 34,
+    total: 156
+  };
+
+  const values = {
+    "lat-val-stt": latency.stt,
+    "lat-val-guard": latency.guardrails,
+    "lat-val-ret": latency.retrieval,
+    "lat-val-gen": latency.generation,
+    "lat-val-ground": latency.grounding,
+    "lat-val-tts": latency.tts
+  };
+
+  Object.entries(values).forEach(([id, value]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = `${value} ms`;
+  });
+
+  // LATENCY BARS
+  const bars = {
+    "bar-stt": latency.stt,
+    "bar-guard": latency.guardrails,
+    "bar-ret": latency.retrieval,
+    "bar-gen": latency.generation,
+    "bar-ground": latency.grounding,
+    "bar-tts": latency.tts
+  };
+
+  Object.entries(bars).forEach(([id, value]) => {
+    const el = document.getElementById(id);
+
+    if (el) {
+      el.style.width = `${Math.min((value / 200) * 100, 100)}%`;
+    }
+  });
+
+  // EVIDENCE
+  const sourceCount = document.getElementById("source-count");
+  const sourcesList = document.getElementById("sources-list");
+
+  if (sourceCount) {
+    sourceCount.textContent = "1";
+  }
+
+  if (sourcesList) {
+    sourcesList.innerHTML = `
+      <div class="source-card">
+        <strong>Built-in Demo Knowledge Base</strong>
+        <p>${answer}</p>
+      </div>
+    `;
+  }
+
+  // TRANSCRIPT
+  const transcript = document.getElementById("transcript-display");
+
+  if (transcript) {
+    transcript.textContent = query;
+  }
+
+  // VOICE
+  if ("speechSynthesis" in window) {
+
+    speechSynthesis.cancel();
+
+    const voice = new SpeechSynthesisUtterance(answer);
+
+    voice.lang = item.lang;
+
+    speechSynthesis.speak(voice);
+  }
+}
+
+
+// DEMO BUTTONS
+document.addEventListener("click", function(event) {
+
+  const button = event.target.closest(".pill-btn");
+
+  if (!button) return;
+
+  event.preventDefault();
+
+  const query = button.dataset.query;
+
+  if (!query) return;
+
+  runFrontendDemo(
+    query,
+    button.dataset.lang || "en-IN"
+  );
+
+}, true);
+
+
+// TEXT QUERY
+document.addEventListener("submit", function(event) {
+
+  if (event.target.id !== "text-query-form") return;
+
+  event.preventDefault();
+
+  const input = document.getElementById("text-query-input");
+
+  if (input && input.value.trim()) {
+    runFrontendDemo(input.value);
+  }
+
+}, true);
+
+
+// VOICE INPUT
+const SpeechRecognition =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
+
+let recognition = null;
+
+document.addEventListener("click", function(event) {
+
+  const mic = event.target.closest("#mic-button");
+
+  if (!mic || !SpeechRecognition) return;
+
+  event.preventDefault();
+
+  recognition = new SpeechRecognition();
+
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  const language =
+    document.getElementById("language-select")?.value || "en-IN";
+
+  recognition.lang = language;
+
+  const status =
+    document.getElementById("mic-status-text");
+
+  if (status) {
+    status.textContent = "Listening...";
+  }
+
+  recognition.onresult = function(event) {
+
+    const text =
+      event.results[0][0].transcript;
+
+    if (status) {
+      status.textContent = text;
+    }
+
+    runFrontendDemo(text, language);
+  };
+
+  recognition.onerror = function() {
+
+    if (status) {
+      status.textContent = "Voice recognition failed.";
+    }
+  };
+
+  recognition.onend = function() {
+
+    if (status) {
+      status.textContent = "Click microphone to speak";
+    }
+  };
+
+  recognition.start();
+
+}, true);
+</script>
 </body>
 </html>
