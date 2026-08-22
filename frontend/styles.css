@@ -1631,4 +1631,238 @@ body {
   transform: translateY(2px);
   box-shadow: 2px 2px 0px var(--goa-ink-line);
 }
+/* ================================
+   FINAL MOBILE FIX
+   ================================ */
 
+@media (max-width: 768px) {
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  .app-background {
+    width: 100% !important;
+  }
+
+  .layout-container,
+  .showcase-container,
+  main,
+  section,
+  .card,
+  .showcase-card,
+  .showcase-body,
+  .response-body {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .layout-container {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    margin: 0 auto !important;
+  }
+
+  /* Header */
+  .app-header {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 15px !important;
+  }
+
+  .header-brand {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .brand-text {
+    min-width: 0 !important;
+  }
+
+  .title-row h1 {
+    font-size: 25px !important;
+    line-height: 1.1 !important;
+    word-break: normal !important;
+  }
+
+  .subtitle {
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .header-status {
+    width: 100% !important;
+  }
+
+  /* Main voice/output area */
+  .voice-interface,
+  .main-grid,
+  .content-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  /* Three desktop cards -> one card per row */
+  .showcase-row-3 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    width: 100% !important;
+  }
+
+  .showcase-row-3 > * {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: none !important;
+  }
+
+  /* Card headers */
+  .card-header {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex-wrap: wrap !important;
+  }
+
+  .card-title-group {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .card-title-group h2,
+  .card-title-group .section-subtitle {
+    overflow-wrap: anywhere !important;
+  }
+
+  .tech-badge {
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* Latency */
+  .latency-hero-metric {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+  }
+
+  .latency-hero-left,
+  .latency-hero-right {
+    max-width: 100% !important;
+  }
+
+  .lat-row {
+    grid-template-columns: 125px minmax(0, 1fr) 45px !important;
+  }
+
+  .lat-name {
+    white-space: normal !important;
+  }
+
+  /* Inputs */
+  input,
+  select,
+  textarea,
+  button {
+    max-width: 100% !important;
+  }
+
+  /* Demo buttons */
+  .demo-buttons,
+  .pill-grid,
+  .pill-row {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .pill-btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    text-align: left !important;
+  }
+
+  /* Technology cards */
+  .tech-stack-grid {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+
+  .tech-card {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Source/evidence */
+  .sources-container,
+  .sources-list,
+  .source-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .source-card {
+    overflow-wrap: anywhere !important;
+  }
+
+  /* Footer */
+  .footer-content {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+  }
+
+  /* Prevent long text from forcing horizontal scroll */
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  span,
+  code {
+    max-width: 100% !important;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .layout-container {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .title-row h1 {
+    font-size: 21px !important;
+  }
+
+  .card {
+    padding: 12px !important;
+  }
+
+  .card-title-group h2 {
+    font-size: 18px !important;
+  }
+
+  .lat-row {
+    grid-template-columns: 105px minmax(0, 1fr) 40px !important;
+    gap: 6px !important;
+    font-size: 11px !important;
+  }
+}
