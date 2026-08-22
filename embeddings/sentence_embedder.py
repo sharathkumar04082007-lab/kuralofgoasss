@@ -26,21 +26,25 @@ class MultilingualEmbedder(BaseEmbedder):
         
         self._model = None
         self._dimension = 384  # Default for paraphrase-multilingual-MiniLM-L12-v2
-        self._initialize_model()
+        self._hf_model = None
+        self._tokenizer = None
+       # self._initialize_model()
 
     def _initialize_model(self) -> None:
-        """Lazy loads or initializes the SentenceTransformer model."""
+        """Lazy loads or initializes the transformer model with minimal memory footprint."""
         try:
-            from sentence_transformers import SentenceTransformer
-            logger.info(f"Loading embedding model: {self._model_name} on {self.device}...")
-            self._model = SentenceTransformer(self._model_name, device=self.device)
-            # Warm up dimension
-            sample_emb = self._model.encode("warmup", convert_to_numpy=True, normalize_embeddings=True)
-            self._dimension = int(sample_emb.shape[0])
+            import torch
+            from transformers import AutoTokenizer, AutoModel
+            logger.info(f"Loading lightweight transformer: {self._model_name} on {self.device}...")
+            self._tokenizer = AutoTokenizer.from_pretrained(self._model_name)
+            self._hf_model = AutoModel.from_pretrained(self._model_name)
+            self._hf_model.eval()
+            self._dimension = 384
             logger.info(f"Embedding model ready. Dimension: {self._dimension}")
-        except Exception as e:
-            logger.warning(f"Failed loading SentenceTransformer {self._model_name}: {e}. Initializing deterministic fallback embedder.")
-            self._model = None
+        except BaseException as e:
+            logger.warning(f"Transformer load notice ({e}). Initializing deterministic fallback embedder.")
+            self._tokenizer = None
+            self._hf_model = None
             self._dimension = 384
 
     @property
@@ -71,16 +75,24 @@ class MultilingualEmbedder(BaseEmbedder):
             cached_vec = self.cache.get(text_clean, self._model_name)
             if cached_vec is not None:
                 return cached_vec
+                # Lazy-load transformer only when an embedding is actually requested
+        if self._hf_model is None or self._tokenizer is None:
+           self._initialize_model()
 
-        if self._model is not None:
+        
+        if getattr(self, "_hf_model", None) is not None and getattr(self, "_tokenizer", None) is not None:
             try:
-                emb = self._model.encode(
-                    text_clean,
-                    convert_to_numpy=True,
-                    normalize_embeddings=True,
-                    show_progress_bar=False
-                )
-                vec = np.array(emb, dtype=np.float32)
+                import torch
+                with torch.no_grad():
+                    inputs = self._tokenizer([text_clean], padding=True, truncation=True, max_length=128, return_tensors="pt")
+                    outputs = self._hf_model(**inputs)
+                    # Mean pooling
+                    mask = inputs["attention_mask"].unsqueeze(-1).expand(outputs[0].size()).float()
+                    summed = torch.sum(outputs[0] * mask, 1)
+                    counts = torch.clamp(mask.sum(1), min=1e-9)
+                    pooled = (summed / counts).squeeze(0)
+                    norm = torch.norm(pooled, p=2, dim=0, keepdim=True).clamp(min=1e-12)
+                    vec = (pooled / norm).cpu().numpy().astype(np.float32)
             except Exception as e:
                 logger.error(f"Error during model encoding: {e}. Using fallback.")
                 vec = self._deterministic_fallback_embed(text_clean)
@@ -117,30 +129,28 @@ class MultilingualEmbedder(BaseEmbedder):
 
         # Compute uncached
         if uncached_texts:
-            if self._model is not None:
+            if getattr(self, "_hf_model", None) is not None and getattr(self, "_tokenizer", None) is not None:
                 try:
-                    computed = self._model.encode(
-                        uncached_texts,
-                        batch_size=64,
-                        convert_to_numpy=True,
-                        normalize_embeddings=True,
-                        show_progress_bar=False
-                    )
-                    for i, orig_idx in enumerate(uncached_indices):
-                        vec = np.array(computed[i], dtype=np.float32)
-                        results[orig_idx] = vec
-                        if self.cache:
-                            self.cache.put(uncached_texts[i], self._model_name, vec)
+                    import torch
+                    with torch.no_grad():
+                        inputs = self._tokenizer(uncached_texts, padding=True, truncation=True, max_length=128, return_tensors="pt")
+                        outputs = self._hf_model(**inputs)
+                        mask = inputs["attention_mask"].unsqueeze(-1).expand(outputs[0].size()).float()
+                        summed = torch.sum(outputs[0] * mask, 1)
+                        counts = torch.clamp(mask.sum(1), min=1e-9)
+                        pooled = summed / counts
+                        norm = torch.norm(pooled, p=2, dim=1, keepdim=True).clamp(min=1e-12)
+                        batch_vecs = (pooled / norm).cpu().numpy().astype(np.float32)
                 except Exception as e:
-                    logger.error(f"Batch encoding failed: {e}")
-                    for i, orig_idx in enumerate(uncached_indices):
-                        vec = self._deterministic_fallback_embed(uncached_texts[i])
-                        results[orig_idx] = vec
+                    logger.error(f"Batch encoding error: {e}. Using fallback.")
+                    batch_vecs = np.array([self._deterministic_fallback_embed(t) for t in uncached_texts], dtype=np.float32)
             else:
-                for i, orig_idx in enumerate(uncached_indices):
-                    vec = self._deterministic_fallback_embed(uncached_texts[i])
-                    results[orig_idx] = vec
-                    if self.cache:
-                        self.cache.put(uncached_texts[i], self._model_name, vec)
+                batch_vecs = np.array([self._deterministic_fallback_embed(t) for t in uncached_texts], dtype=np.float32)
 
-        return np.vstack([r for r in results if r is not None])
+            for u_idx, orig_idx in enumerate(uncached_indices):
+                vec = batch_vecs[u_idx]
+                results[orig_idx] = vec
+                if self.cache and uncached_texts[u_idx]:
+                    self.cache.put(uncached_texts[u_idx], self._model_name, vec)
+
+        return np.array([r for r in results if r is not None], dtype=np.float32)

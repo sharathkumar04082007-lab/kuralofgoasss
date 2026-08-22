@@ -57,7 +57,8 @@ class RetrievalEvaluator:
         # 3. Build in-memory index
         vector_store = QdrantVectorStore(
             collection_name=f"eval_{strategy_name}",
-            dimension=self.embedder.dimension
+            dimension=self.embedder.dimension,
+            storage_path=":memory:"
         )
         vector_store.clear()
         

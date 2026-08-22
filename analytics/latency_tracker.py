@@ -12,11 +12,14 @@ class LatencyTracker:
     def __init__(self):
         self.stage_times: Dict[str, float] = {
             "stt_ms": 0.0,
+            "language_detection_ms": 0.0,
             "guardrails_ms": 0.0,
+            "embedding_ms": 0.0,
             "retrieval_ms": 0.0,
             "rerank_ms": 0.0,
             "generation_ms": 0.0,
             "grounding_ms": 0.0,
+            "tts_ms": 0.0,
             "total_ms": 0.0
         }
         self._start_perf = time.perf_counter()
