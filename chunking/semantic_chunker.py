@@ -1,6 +1,6 @@
 import re
 import numpy as np
-from typing import List, Optional
+from typing import Any,List, Optional
 from pipeline.schemas import Document, Chunk
 from chunking.base import BaseChunker
 
